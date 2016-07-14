@@ -106,9 +106,17 @@ class NodeGithubOAuth2 {
             });
 
             ls.on('close', (code) => {
-                dubug(`child process exited with code ${code}`);
+                console.log(`child process exited with code ${code}`);
             });
         })
+    }
+
+    deleteGithubRepo(options, callback) {
+        github.authenticate({
+            type: "oauth",
+            token: options.token
+        });
+        github.repos.delete({repo: options.name, user: options.org}, callback);
     }
 }
 
