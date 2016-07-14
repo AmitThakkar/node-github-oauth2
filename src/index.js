@@ -16,7 +16,7 @@ const GITHUB_LOGIN_URL = PROTOCOL + '://github.com/login';
 const OAUTH_ACCESS_TOKEN_PATH = '/oauth/access_token';
 const OAUTHORIZATION_PATH = '/oauth/authorize';
 
-let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope, github;
+let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope, gitDirectory, github;
 
 class NodeGithubOAuth2 {
     constructor(options) {
@@ -24,6 +24,7 @@ class NodeGithubOAuth2 {
         clientSecret = options.clientSecret;
         redirectURI = options.redirectURI;
         scope = options.scope;
+        gitDirectory = options.gitDirectory;
         github = new GITHUB({
             protocol: PROTOCOL,
             host: HOST,
@@ -74,16 +75,40 @@ class NodeGithubOAuth2 {
     }
 
     // TODO execute synchronize
-    getOrganizations(token, callback) {
+    getOrganizations(options, callback) {
         github.authenticate({
             type: "oauth",
-            token: token
+            token: options.token
         });
         github.users.getOrgs({}, callback);
     }
 
-    createProject() {
+    createRepoAndCloneProject(options, callback) {
+        github.authenticate({
+            type: "oauth",
+            token: options.token
+        });
+        github.repos.createForOrg({
+            org: options.org,
+            name: options.name,
+            description: options.discription,
+            private: options.private || false
+        }, function (err, result) {
+            let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
+            const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
 
+            ls.stdout.on('data', (data) => {
+                callback(null, data);
+            });
+
+            ls.stderr.on('data', (data) => {
+                callback(data);
+            });
+
+            ls.on('close', (code) => {
+                dubug(`child process exited with code ${code}`);
+            });
+        })
     }
 }
 
