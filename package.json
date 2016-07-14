@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/AmitThakkar/node-github-oauth2#readme",
   "dependencies": {
+    "bluebird": "^3.4.1",
+    "github": "^2.2.0",
     "randomstring": "^1.1.5",
     "simple-oauth2": "^0.7.0"
   }

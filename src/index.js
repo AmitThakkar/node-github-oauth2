@@ -5,13 +5,18 @@
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
 const QUERY_STRING = require('querystring');
+const GITHUB = require("github");
+const SPAWN = require('child_process').spawn;
+const BLUE_BIRD = require('bluebird');
 
 // Constants
-const GITHUB_LOGIN_URL = 'https://github.com/login';
+const PROTOCOL = 'https';
+const HOST = 'api.github.com';
+const GITHUB_LOGIN_URL = PROTOCOL + '://github.com/login';
 const OAUTH_ACCESS_TOKEN_PATH = '/oauth/access_token';
 const OAUTHORIZATION_PATH = '/oauth/authorize';
 
-let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope;
+let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope, github;
 
 class NodeGithubOAuth2 {
     constructor(options) {
@@ -19,6 +24,17 @@ class NodeGithubOAuth2 {
         clientSecret = options.clientSecret;
         redirectURI = options.redirectURI;
         scope = options.scope;
+        github = new GITHUB({
+            protocol: PROTOCOL,
+            host: HOST,
+            pathPrefix: "",
+            headers: {
+                "user-agent": options.userAgent
+            },
+            Promise: BLUE_BIRD,
+            followRedirects: false,
+            timeout: 5000
+        });
         this.initialize();
     }
 
@@ -55,6 +71,19 @@ class NodeGithubOAuth2 {
                 next();
             }
         });
+    }
+
+    // TODO execute synchronize
+    getOrganizations(token, callback) {
+        github.authenticate({
+            type: "oauth",
+            token: token
+        });
+        github.users.getOrgs({}, callback);
+    }
+
+    createProject() {
+
     }
 }
 
