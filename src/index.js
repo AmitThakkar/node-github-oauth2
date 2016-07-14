@@ -4,6 +4,7 @@
 // Dependencies
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
+const QUERY_STRING = require('querystring');
 
 // Constants
 const GITHUB_LOGIN_URL = 'https://github.com/login';
@@ -50,7 +51,7 @@ class NodeGithubOAuth2 {
             if (error) {
                 next(error);
             } else {
-                request.token = oauth2.accessToken.create(result);
+                request.token = QUERY_STRING.parse(result).access_token;
                 next();
             }
         });
