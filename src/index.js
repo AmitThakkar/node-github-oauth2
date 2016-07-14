@@ -12,7 +12,7 @@ const OAUTHORIZATION_PATH = '/oauth/authorize';
 
 let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope;
 
-class NodeGithubOAuth {
+class NodeGithubOAuth2 {
     constructor(options) {
         clientId = options.clientId;
         clientSecret = options.clientSecret;
@@ -37,10 +37,8 @@ class NodeGithubOAuth {
         });
     }
 
-    authorized() {
-        return (request, response) => {
-            response.redirect(redirectURL);
-        }
+    authorized(request, response) {
+        response.redirect(redirectURL);
     }
 
     getToken(request, response, next) {
@@ -52,12 +50,13 @@ class NodeGithubOAuth {
             if (error) {
                 next(error);
             } else {
-                next(null, result);
+                request.token = oauth2.accessToken.create(result);
+                next();
             }
         });
     }
 }
 
 exports = module.exports = function (options) {
-    return new NodeGithubOAuth(options);
+    return new NodeGithubOAuth2(options);
 };
