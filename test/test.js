@@ -31,7 +31,7 @@ app.get('/', function (req, res) {
 
 app.get('/orgs', function (req, res) {
     NodeGithubOAuth2.getOrganizations({
-        token: '0c87ddac3aa121b4795ddf266c32c7351d33f645'
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
     }, function (error, result) {
         res.json(result);
     });
@@ -39,9 +39,9 @@ app.get('/orgs', function (req, res) {
 
 app.get('/createProject', function (req, res) {
     NodeGithubOAuth2.createRepoAndCloneProject({
-        token: '0c87ddac3aa121b4795ddf266c32c7351d33f645',
-        org: 'wizspark',
-        name: 'ngt2',
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        org: 'OrganizationName',
+        name: 'ngt1',
         description: 'Node-Git-Test-2',
         private: true
     }, function (error, result) {
@@ -51,16 +51,29 @@ app.get('/createProject', function (req, res) {
 
 app.get('/deleteProject', function (req, res) {
     NodeGithubOAuth2.deleteGithubRepo({
-        token: '0c87ddac3aa121b4795ddf266c32c7351d33f645',
-        org: 'wizspark',
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        org: 'OrganizationName',
         name: 'ngt1'
     }, function (error, result) {
         res.json(result);
     });
 });
 
-
-
+app.get('/addCollaborators', function (req, res) {
+    NodeGithubOAuth2.addCollaborators({
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        user: 'OrganizationName',
+        repo: 'ngt1',
+        collabuser: 'NamitaMalik',
+        permission: 'admin'
+    }, function (error, result) {
+        if(error) {
+            res.json(result);
+        } else {
+            res.json(result);
+        }
+    });
+});
 
 app.listen(3000);
 
