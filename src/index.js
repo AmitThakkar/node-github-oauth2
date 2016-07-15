@@ -98,11 +98,11 @@ class NodeGithubOAuth2 {
             const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
 
             ls.stdout.on('data', (data) => {
-                callback(null, data);
+                callback(null, data.toString());
             });
 
-            ls.stderr.on('data', (data) => {
-                callback(data);
+            ls.stderr.on('data', (error) => {
+                callback(error.toString());
             });
 
             ls.on('close', (code) => {
@@ -117,6 +117,19 @@ class NodeGithubOAuth2 {
             token: options.token
         });
         github.repos.delete({repo: options.name, user: options.org}, callback);
+    }
+
+    addCollaborators(options, callback) {
+        github.authenticate({
+            type: "oauth",
+            token: options.token
+        });
+        github.repos.addCollaborator({
+            user: options.user,
+            repo: options.repo,
+            collabuser: options.collabuser,
+            permission: options.permission
+        }, callback);
     }
 }
 
