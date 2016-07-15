@@ -131,6 +131,18 @@ class NodeGithubOAuth2 {
             permission: options.permission
         }, callback);
     }
+
+    removeCollaborator(options, callback) {
+        github.authenticate({
+            type: "oauth",
+            token: options.token
+        });
+        github.repos.removeCollaborator({
+            user: options.user,
+            repo: options.repo,
+            collabuser: options.collabuser
+        }, callback);
+    }
 }
 
 exports = module.exports = function (options) {

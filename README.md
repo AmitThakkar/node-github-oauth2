@@ -80,6 +80,21 @@ app.get('/addCollaborators', function (req, res) {
     });
 });
 
+app.get('/removeCollaborator', function (req, res) {
+    NodeGithubOAuth2.removeCollaborator({
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        user: 'OrganizationName',
+        repo: 'ngt1',
+        collabuser: 'NamitaMalik'
+    }, function (error, result) {
+        if(error) {
+            res.json(result);
+        } else {
+            res.json(result);
+        }
+    });
+});
+
 app.listen(3000);
 
 console.log('Express server started on port 3000');
