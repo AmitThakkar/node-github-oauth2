@@ -74,14 +74,13 @@ class NodeGithubOAuth2 {
         });
     }
 
-    // TODO execute synchronize
     authenicateGithubWithToken(token) {
         github.authenticate({
             type: "oauth",
             token: token
         });
     }
-    
+
     getOrganizations(options, callback) {
         this.authenicateGithubWithToken(options.authenicateGithubWithToken);
         github.users.getOrgs({}, callback);
@@ -97,15 +96,12 @@ class NodeGithubOAuth2 {
         }, function (err, result) {
             let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
             const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
-
             ls.stdout.on('data', (data) => {
                 callback(null, data.toString());
             });
-
             ls.stderr.on('data', (error) => {
                 callback(error.toString());
             });
-
             ls.on('close', (code) => {
                 console.log(`child process exited with code ${code}`);
             });
@@ -134,6 +130,19 @@ class NodeGithubOAuth2 {
             repo: options.repo,
             collabuser: options.collabuser
         }, callback);
+    }
+
+    commitAndPush(options, callback) {
+        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.userName, options.email, options.email].join(' '));
+        gitCommand.stdout.on('data', (data) => {
+            callback(null, data.toString());
+        });
+        gitCommand.stderr.on('data', (error) => {
+            callback(error.toString());
+        });
+        gitCommand.on('close', (code) => {
+            console.log(`child process exited with code ${code}`);
+        });
     }
 }
 
