@@ -82,12 +82,12 @@ class NodeGithubOAuth2 {
     }
 
     getOrganizations(options, callback) {
-        this.authenicateGithubWithToken(options.authenicateGithubWithToken);
+        this.authenicateGithubWithToken(options.token);
         github.users.getOrgs({}, callback);
     }
 
     createRepoAndCloneProject(options, callback) {
-        this.authenicateGithubWithToken(options.authenicateGithubWithToken);
+        this.authenicateGithubWithToken(options.token);
         github.repos.createForOrg({
             org: options.org,
             name: options.name,
@@ -109,12 +109,12 @@ class NodeGithubOAuth2 {
     }
 
     deleteGithubRepo(options, callback) {
-        this.authenicateGithubWithToken(options.authenicateGithubWithToken);
+        this.authenicateGithubWithToken(options.token);
         github.repos.delete({repo: options.name, user: options.org}, callback);
     }
 
-    addCollaborators(options, callback) {
-        this.authenicateGithubWithToken(options.authenicateGithubWithToken);
+    addCollaborator(options, callback) {
+        this.authenicateGithubWithToken(options.token);
         github.repos.addCollaborator({
             user: options.user,
             repo: options.repo,
@@ -124,7 +124,7 @@ class NodeGithubOAuth2 {
     }
 
     removeCollaborator(options, callback) {
-        this.authenicateGithubWithToken(options.authenicateGithubWithToken);
+        this.authenicateGithubWithToken(options.token);
         github.repos.removeCollaborator({
             user: options.user,
             repo: options.repo,
