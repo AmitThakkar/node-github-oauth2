@@ -30,7 +30,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/orgs', function (req, res) {
-    NodeGithubOAuth2.getOrganizations({
+    NodeGithubOAuth2.getOrganization({
         token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY'
     }, function (error, result) {
         res.json(result);
