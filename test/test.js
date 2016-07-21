@@ -14,7 +14,10 @@ var NodeGithubOAuth2 = require('node-github-oauth2')({
 });
 
 // Initial page redirecting to Github
-app.get('/auth', NodeGithubOAuth2.authorized);
+// app.get('/auth', NodeGithubOAuth2.authorized);
+exports.authorized = (request, response) => {
+    response.status(200).json({redirectURL: NodeGithubOAuth2.getRedirectURL()});
+};
 
 // Callback service parsing the authorization token and asking for the access token
 app.get('/callback', NodeGithubOAuth2.getToken, function (request, response) {
