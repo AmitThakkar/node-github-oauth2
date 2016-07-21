@@ -1,6 +1,7 @@
 /**
  * Created by amitthakkar on 13/07/16.
  */
+'use strict';
 // Dependencies
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
@@ -146,6 +147,6 @@ class NodeGithubOAuth2 {
     }
 }
 
-exports = module.exports = function (options) {
+module.exports = function (options) {
     return new NodeGithubOAuth2(options);
 };
