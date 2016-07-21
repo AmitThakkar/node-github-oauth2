@@ -56,8 +56,8 @@ class NodeGithubOAuth2 {
         });
     }
 
-    authorized(request, response) {
-        response.redirect(redirectURL);
+    getRedirectURL(request, response) {
+        return redirectURL;
     }
 
     getToken(request, response, next) {
