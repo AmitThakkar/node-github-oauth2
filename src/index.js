@@ -146,6 +146,18 @@ class NodeGithubOAuth2 {
             console.log(`child process exited with code ${code}`);
         });
     }
+
+    searchByEmail(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.search.email({
+            email: options.email
+        }, callback);
+    }
+
+    getUser(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.users.get({}, callback);
+    }
 }
 
 module.exports = function (options) {
