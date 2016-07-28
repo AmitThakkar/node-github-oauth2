@@ -17,7 +17,7 @@ const GITHUB_LOGIN_URL = PROTOCOL + '://github.com/login';
 const OAUTH_ACCESS_TOKEN_PATH = '/oauth/access_token';
 const OAUTHORIZATION_PATH = '/oauth/authorize';
 
-let oauth2, redirectURL, clientId, clientSecret, redirectURI, scope, gitDirectory, github;
+let oauth2, clientId, clientSecret, redirectURI, scope, gitDirectory, github;
 
 class NodeGithubOAuth2 {
     constructor(options) {
@@ -49,19 +49,19 @@ class NodeGithubOAuth2 {
             tokenPath: OAUTH_ACCESS_TOKEN_PATH,
             authorizationPath: OAUTHORIZATION_PATH
         });
-        redirectURL = oauth2.authCode.authorizeURL({
+    }
+
+    getRedirectURL(state) {
+        return oauth2.authCode.authorizeURL({
             redirect_uri: redirectURI,
             scope: scope,
-            state: randomString
+            state: state
         });
     }
 
-    getRedirectURL(request, response) {
-        return redirectURL;
-    }
-
     getToken(request, response, next) {
-        var code = request.query.code;
+        let code = request.query.code;
+        let state = request.query.state;
         oauth2.authCode.getToken({
             code: code,
             redirect_uri: redirectURI
@@ -70,6 +70,7 @@ class NodeGithubOAuth2 {
                 next(error);
             } else {
                 request.token = QUERY_STRING.parse(result).access_token;
+                request.state = state;
                 next();
             }
         });
