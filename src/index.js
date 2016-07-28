@@ -95,17 +95,21 @@ class NodeGithubOAuth2 {
             name: options.name,
             description: options.discription,
             private: options.private || false
-        }, function (err, result) {
+        }, function (createRepoError) {
+            if(createRepoError) {
+                return callback(createRepoError);
+            }
             let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
             const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
+            let cloneResult = '', cloneError = '';
             ls.stdout.on('data', (data) => {
-                callback(null, data.toString());
+                cloneResult += data.toString();
             });
-            ls.stderr.on('data', (error) => {
-                callback(error.toString());
+            ls.stderr.on('data', (err) => {
+                cloneError += err.toString();
             });
             ls.on('close', (code) => {
-                console.log(`child process exited with code ${code}`);
+                callback(null, cloneResult || cloneError, code);
             });
         })
     }
