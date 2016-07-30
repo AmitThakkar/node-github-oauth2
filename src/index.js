@@ -155,12 +155,26 @@ class NodeGithubOAuth2 {
     }
 
     removeCollaborator(options, callback) {
-        this.authenicateGithubWithToken(options.token);
-        github.repos.removeCollaborator({
-            user: options.user,
-            repo: options.repo,
-            collabuser: options.collabuser
-        }, callback);
+        if(isValidEmail(options.collabuser)) {
+            this.searchByEmail({
+                token: options.token,
+                email: options.collabuser
+            }, (error, result) => {
+                this.authenicateGithubWithToken(options.token);
+                github.repos.removeCollaborator({
+                    user: options.user,
+                    repo: options.repo,
+                    collabuser: result.user.login
+                }, callback);
+            });
+        } else {
+            this.authenicateGithubWithToken(options.token);
+            github.repos.removeCollaborator({
+                user: options.user,
+                repo: options.repo,
+                collabuser: options.collabuser
+            }, callback);
+        }
     }
 
     commitAndPush(options, callback) {
