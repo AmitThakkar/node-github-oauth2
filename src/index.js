@@ -19,6 +19,11 @@ const OAUTHORIZATION_PATH = '/oauth/authorize';
 
 let oauth2, clientId, clientSecret, redirectURI, scope, gitDirectory, github;
 
+let isValidEmail = (email) => {
+    var emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRegex.test(email);
+};
+
 class NodeGithubOAuth2 {
     constructor(options) {
         clientId = options.clientId;
@@ -96,7 +101,7 @@ class NodeGithubOAuth2 {
             description: options.discription,
             private: options.private || false
         }, function (createRepoError) {
-            if(createRepoError) {
+            if (createRepoError) {
                 return callback(createRepoError);
             }
             let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
@@ -119,14 +124,34 @@ class NodeGithubOAuth2 {
         github.repos.delete({repo: options.name, user: options.org}, callback);
     }
 
-    addCollaborator(options, callback) {
+    searchByEmail(options, callback) {
         this.authenicateGithubWithToken(options.token);
-        github.repos.addCollaborator({
-            user: options.user,
-            repo: options.repo,
-            collabuser: options.collabuser,
-            permission: options.permission
-        }, callback);
+        github.search.email({email: options.email}, callback);
+    }
+
+    addCollaborator(options, callback) {
+        if(isValidEmail(options.collabuser)) {
+            this.searchByEmail({
+                token: options.token,
+                email: options.collabuser
+            }, (error, result) => {
+                this.authenicateGithubWithToken(options.token);
+                github.repos.addCollaborator({
+                    user: options.user,
+                    repo: options.repo,
+                    collabuser: result.user.login,
+                    permission: options.permission
+                }, callback);
+            });
+        } else {
+            this.authenicateGithubWithToken(options.token);
+            github.repos.addCollaborator({
+                user: options.user,
+                repo: options.repo,
+                collabuser: options.collabuser,
+                permission: options.permission
+            }, callback);
+        }
     }
 
     removeCollaborator(options, callback) {
@@ -149,13 +174,6 @@ class NodeGithubOAuth2 {
         gitCommand.on('close', (code) => {
             console.log(`child process exited with code ${code}`);
         });
-    }
-
-    searchByEmail(options, callback) {
-        this.authenicateGithubWithToken(options.token);
-        github.search.email({
-            email: options.email
-        }, callback);
     }
 
     getUser(options, callback) {
