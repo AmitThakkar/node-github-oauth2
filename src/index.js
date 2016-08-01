@@ -178,7 +178,7 @@ class NodeGithubOAuth2 {
     }
 
     commitAndPush(options, callback) {
-        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.userName, options.email, options.email].join(' '));
+        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.userName, options.email, options.commitMessage].join(' '));
         gitCommand.stdout.on('data', (data) => {
             callback(null, data.toString());
         });
