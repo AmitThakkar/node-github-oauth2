@@ -8,6 +8,7 @@ const RANDOM_STRING = require("randomstring");
 const QUERY_STRING = require('querystring');
 const GITHUB = require("github");
 const SPAWN = require('child_process').spawn;
+const EXEC = require('child_process').exec;
 const BLUE_BIRD = require('bluebird');
 
 // Constants
@@ -113,15 +114,15 @@ class NodeGithubOAuth2 {
             }
             let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
             const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
-            let cloneResult = '', cloneError = '';
+            let cloneResult = '';
             ls.stdout.on('data', (data) => {
                 cloneResult += data.toString();
             });
             ls.stderr.on('data', (err) => {
-                cloneError += err.toString();
+                cloneResult += err.toString();
             });
             ls.on('close', (code) => {
-                callback(null, cloneResult || cloneError, code);
+                callback(null, cloneResult, code);
             });
         })
     }
@@ -226,15 +227,8 @@ class NodeGithubOAuth2 {
         } else if (!options.commitMessage) {
             return callback('commitMessage is not present!');
         }
-        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.username, options.email, options.commitMessage].join(' '));
-        gitCommand.stdout.on('data', (data) => {
-            callback(null, data.toString());
-        });
-        gitCommand.stderr.on('data', (error) => {
-            callback(error.toString());
-        });
-        gitCommand.on('close', (code) => {
-            console.log(`child process exited with code ${code}`);
+        EXEC(['source', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ ')].join(' '), function (error, stdout, stderr) {
+            callback(error, stdout, stderr);
         });
     }
 
