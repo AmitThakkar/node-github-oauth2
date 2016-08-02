@@ -1,6 +1,6 @@
 {
   "name": "node-github-oauth2",
-  "version": "0.0.17",
+  "version": "0.1.0",
   "description": "This repository contains node module for authenticating with github and interacting with github.",
   "main": "./src/index",
   "scripts": {
