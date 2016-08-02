@@ -94,6 +94,13 @@ class NodeGithubOAuth2 {
     }
 
     createRepoAndCloneProject(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        }
         this.authenicateGithubWithToken(options.token);
         github.repos.createForOrg({
             org: options.org,
@@ -120,17 +127,40 @@ class NodeGithubOAuth2 {
     }
 
     deleteGithubRepo(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        }
         this.authenicateGithubWithToken(options.token);
         github.repos.delete({repo: options.name, user: options.org}, callback);
     }
 
     searchByEmail(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.email) {
+            return callback('email is not present!');
+        }
         this.authenicateGithubWithToken(options.token);
         github.search.email({email: options.email}, callback);
     }
 
     addCollaborator(options, callback) {
-        if(isValidEmail(options.collabuser)) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.collabuser) {
+            return callback('collabuser is not present!');
+        } else if (!options.user) {
+            return callback('user is not present!');
+        } else if (!options.repo) {
+            return callback('repo is not present!');
+        } else if (!options.permission) {
+            return callback('permission is not present!');
+        }
+        if (isValidEmail(options.collabuser)) {
             this.searchByEmail({
                 token: options.token,
                 email: options.collabuser
@@ -155,7 +185,16 @@ class NodeGithubOAuth2 {
     }
 
     removeCollaborator(options, callback) {
-        if(isValidEmail(options.collabuser)) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.collabuser) {
+            return callback('collabuser is not present!');
+        } else if (!options.user) {
+            return callback('user is not present!');
+        } else if (!options.repo) {
+            return callback('repo is not present!');
+        }
+        if (isValidEmail(options.collabuser)) {
             this.searchByEmail({
                 token: options.token,
                 email: options.collabuser
@@ -178,6 +217,15 @@ class NodeGithubOAuth2 {
     }
 
     commitAndPush(options, callback) {
+        if (!options.name) {
+            return callback('name is not present!');
+        } else if (!options.userName) {
+            return callback('userName is not present!');
+        } else if (!options.email) {
+            return callback('email is not present!');
+        } else if (!options.commitMessage) {
+            return callback('commitMessage is not present!');
+        }
         const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.userName, options.email, options.commitMessage].join(' '));
         gitCommand.stdout.on('data', (data) => {
             callback(null, data.toString());
@@ -191,6 +239,9 @@ class NodeGithubOAuth2 {
     }
 
     getUser(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
         this.authenicateGithubWithToken(options.token);
         github.users.get({}, callback);
     }
