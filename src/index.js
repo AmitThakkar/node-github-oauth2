@@ -219,14 +219,14 @@ class NodeGithubOAuth2 {
     commitAndPush(options, callback) {
         if (!options.name) {
             return callback('name is not present!');
-        } else if (!options.userName) {
-            return callback('userName is not present!');
+        } else if (!options.username) {
+            return callback('username is not present!');
         } else if (!options.email) {
             return callback('email is not present!');
         } else if (!options.commitMessage) {
             return callback('commitMessage is not present!');
         }
-        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.userName, options.email, options.commitMessage].join(' '));
+        const gitCommand = SPAWN(['source', '../scripts/commitAndPush.sh', gitDirectory + options.name, options.username, options.email, options.commitMessage].join(' '));
         gitCommand.stdout.on('data', (data) => {
             callback(null, data.toString());
         });
