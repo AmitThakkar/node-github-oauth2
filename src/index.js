@@ -94,6 +94,31 @@ class NodeGithubOAuth2 {
         github.users.getOrgs({}, callback);
     }
 
+    createRepo(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.repos.createForOrg({
+            org: options.org,
+            name: options.name,
+            description: options.discription,
+            private: options.private || false
+        }, callback);
+    }
+
+    cloneProject(options, callback) {
+        let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
+        const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
+        let cloneResult = '';
+        ls.stdout.on('data', (data) => {
+            cloneResult += data.toString();
+        });
+        ls.stderr.on('data', (err) => {
+            cloneResult += err.toString();
+        });
+        ls.on('close', (code) => {
+            callback(null, cloneResult, code);
+        });
+    }
+
     createRepoAndCloneProject(options, callback) {
         if (!options.token) {
             return callback('token is not present!');
@@ -102,29 +127,12 @@ class NodeGithubOAuth2 {
         } else if (!options.name) {
             return callback('name is not present!');
         }
-        this.authenicateGithubWithToken(options.token);
-        github.repos.createForOrg({
-            org: options.org,
-            name: options.name,
-            description: options.discription,
-            private: options.private || false
-        }, function (createRepoError) {
+        this.createRepo(options, (createRepoError) => {
             if (createRepoError) {
                 return callback(createRepoError);
             }
-            let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
-            const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
-            let cloneResult = '';
-            ls.stdout.on('data', (data) => {
-                cloneResult += data.toString();
-            });
-            ls.stderr.on('data', (err) => {
-                cloneResult += err.toString();
-            });
-            ls.on('close', (code) => {
-                callback(null, cloneResult, code);
-            });
-        })
+            this.cloneProject(options, callback);
+        });
     }
 
     deleteGithubRepo(options, callback) {
