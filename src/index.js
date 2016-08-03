@@ -240,12 +240,20 @@ class NodeGithubOAuth2 {
         });
     }
 
-    getUser(options, callback) {
+    getUserDetails(options, callback) {
         if (!options.token) {
             return callback('token is not present!');
         }
         this.authenicateGithubWithToken(options.token);
         github.users.get({}, callback);
+    }
+
+    getEmailIds(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
+        this.authenicateGithubWithToken(options.token);
+        github.users.getEmails({}, callback);
     }
 }
 
