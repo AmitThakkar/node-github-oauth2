@@ -175,11 +175,23 @@ class NodeGithubOAuth2 {
                 email: options.collabuser
             }, (error, result) => {
                 this.authenicateGithubWithToken(options.token);
+                let permission;
+                switch (options.permission) {
+                    case 'admin':
+                        permission = 'admin';
+                        break;
+                    case 'write':
+                        permission = 'push';
+                        break;
+                    case 'read':
+                        permission = 'pull';
+                        break;
+                }
                 github.repos.addCollaborator({
                     user: options.user,
                     repo: options.repo,
                     collabuser: result.user.login,
-                    permission: options.permission
+                    permission: permission
                 }, callback);
             });
         } else {
