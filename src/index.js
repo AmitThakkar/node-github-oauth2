@@ -238,7 +238,9 @@ class NodeGithubOAuth2 {
     }
 
     commitAndPush(options, callback) {
-        if (!options.name) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.name) {
             return callback('name is not present!');
         } else if (!options.username) {
             return callback('username is not present!');
@@ -246,8 +248,11 @@ class NodeGithubOAuth2 {
             return callback('email is not present!');
         } else if (!options.commitMessage) {
             return callback('commitMessage is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
         }
-        EXEC(['source', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ ')].join(' '), function (error, stdout, stderr) {
+        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
+        EXEC(['source', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ '), remoteURL].join(' '), function (error, stdout, stderr) {
             callback(error, stdout, stderr);
         });
     }
