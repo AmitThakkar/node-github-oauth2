@@ -272,6 +272,18 @@ class NodeGithubOAuth2 {
         this.authenicateGithubWithToken(options.token);
         github.users.getEmails({}, callback);
     }
+
+    createRelease(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
+        this.authenicateGithubWithToken(options.token);
+        github.repos.createRelease({
+            user: options.user,
+            repo: options.repo,
+            tag_name: options.tag_name
+        }, callback);
+    }
 }
 
 module.exports = function (options) {
