@@ -252,7 +252,7 @@ class NodeGithubOAuth2 {
             return callback('org is not present!');
         }
         let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
-        EXEC(['source', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ '), remoteURL].join(' '), function (error, stdout, stderr) {
+        EXEC(['/bin/sh', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ '), remoteURL].join(' '), function (error, stdout, stderr) {
             callback(error, stdout, stderr);
         });
     }
