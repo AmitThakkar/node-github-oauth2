@@ -1,6 +1,7 @@
 /**
  * Created by amitthakkar on 09/08/16.
  */
+'use strict';
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
 const GITHUB = require("github");
