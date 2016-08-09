@@ -17,12 +17,18 @@ const HOST = 'api.github.com';
 const GITHUB_LOGIN_URL = PROTOCOL + '://github.com/login';
 const OAUTH_ACCESS_TOKEN_PATH = '/oauth/access_token';
 const OAUTHORIZATION_PATH = '/oauth/authorize';
+const SPACE_REGEX = / /g;
+const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const SPACE_REPLACER = '\\ ';
 
 let oauth2, clientId, clientSecret, redirectURI, scope, gitDirectory, github;
 
 let isValidEmail = (email) => {
-    var emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return emailRegex.test(email);
+    return EMAIL_REGEX.test(email);
+};
+
+let replaceSpaceInPath = (path) => {
+    return path.replace(SPACE_REGEX, SPACE_REPLACER);
 };
 
 class NodeGithubOAuth2 {
@@ -263,8 +269,16 @@ class NodeGithubOAuth2 {
         } else if (!options.org) {
             return callback('org is not present!');
         }
-        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
-        EXEC(['/bin/sh', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ '), remoteURL].join(' '), function (error, stdout, stderr) {
+        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git';
+        EXEC([
+            '/bin/sh',
+            replaceSpaceInPath(__dirname + '/../scripts/commitAndPush.sh'),
+            replaceSpaceInPath(gitDirectory + options.name),
+            options.username,
+            options.email,
+            replaceSpaceInPath(options.commitMessage),
+            remoteURL
+        ].join(' '), function (error, stdout, stderr) {
             callback(error, stdout, stderr);
         });
     }
