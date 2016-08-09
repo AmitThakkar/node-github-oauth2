@@ -97,6 +97,7 @@ class GitClient {
     }
 
     cloneProject(options, callback, protocol) {
+        let _this = this;
         let urlProtocol;
         if (protocol) {
             urlProtocol = protocol;
@@ -108,10 +109,10 @@ class GitClient {
             'git',
             'clone',
             gitURL,
-            gitDirectory + options.name
+            replaceSpaceInPath(gitDirectory + options.name)
         ].join(' '), function (error, stdout, stderr) {
             if (error && !protocol) {
-                this.cloneProject(options, callback, 'http');
+                _this.cloneProject(options, callback, 'http');
             } else {
                 callback(error, stdout, stderr);
             }
