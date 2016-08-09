@@ -112,6 +112,7 @@ class GitClient {
             gitURL,
             replaceSpaceInPath(gitDirectory + options.name)
         ].join(' '), function (error, stdout, stderr) {
+            console.log('Clone Result:', stderr, stdout);
             if (error && !protocol) {
                 _this.cloneProject(options, callback, 'http');
             } else {
@@ -186,6 +187,7 @@ class GitClient {
             replaceSpaceInPath(options.commitMessage),
             remoteURL
         ].join(' '), function (error, stdout, stderr) {
+            console.log('Commit And Push Result:', stderr, stdout);
             callback(error, stdout, stderr);
         });
     }
