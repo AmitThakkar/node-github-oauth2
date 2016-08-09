@@ -4,7 +4,6 @@
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
 const GITHUB = require("github");
-const SPAWN = require('child_process').spawn;
 const EXEC = require('child_process').exec;
 const BLUE_BIRD = require('bluebird');
 
@@ -97,19 +96,28 @@ class GitClient {
         github.users.getOrgs({}, callback);
     }
 
-    cloneProject(options, callback) {
-        let gitURL = 'https://' + options.token + ':x-oauth-basic@github.com/' + options.org + '/' + options.name + '.git';
-        const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
-        let cloneResult = '';
-        ls.stdout.on('data', (data) => {
-            cloneResult += data.toString();
+    cloneProject(options, callback, protocol) {
+        let urlProtocol;
+        if (protocol) {
+            urlProtocol = protocol;
+        } else {
+            urlProtocol = 'https';
+        }
+        let gitURL = urlProtocol + '://' + options.token + ':x-oauth-basic@github.com/' + options.org + '/' + options.name + '.git';
+        EXEC([
+            'git',
+            'clone',
+            gitURL,
+            gitDirectory + options.name
+        ].join(' '), function (error, stdout, stderr) {
+            if (error && !protocol) {
+                this.cloneProject(options, callback, 'http');
+            } else {
+                callback(error, stdout, stderr);
+            }
         });
-        ls.stderr.on('data', (err) => {
-            cloneResult += err.toString();
-        });
-        ls.on('close', (code) => {
-            callback(null, cloneResult, code);
-        });
+
+
     }
 
     deleteGithubRepo(options, callback) {
@@ -166,7 +174,7 @@ class GitClient {
     }
 
     commitAndPush(options, callback) {
-        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git';
+        let remoteURL = 'https://' + options.token + ':x-oauth-basic@github.com/' + options.org + '/' + options.name + '.git';
         EXEC([
             '/bin/sh',
             replaceSpaceInPath(__dirname + '/../scripts/commitAndPush.sh'),
