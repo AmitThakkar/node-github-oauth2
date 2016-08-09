@@ -14,17 +14,17 @@ class NodeGithubOAuth2 {
             return 'Already Initialized!';
         }
         if (!options.clientId) {
-            return callback('clientId is not present!');
+            throw new Error('clientId is not present!');
         } else if (!options.clientSecret) {
-            return callback('clientSecret is not present!');
+            throw new Error('clientSecret is not present!');
         } else if (!options.redirectURI) {
-            return callback('redirectURI is not present!');
+            throw new Error('redirectURI is not present!');
         } else if (!options.scope) {
-            return callback('scope is not present!');
+            throw new Error('scope is not present!');
         } else if (!options.gitDirectory) {
-            return callback('gitDirectory is not present!');
+            throw new Error('gitDirectory is not present!');
         } else if (!options.userAgent) {
-            return callback('userAgent is not present!');
+            throw new Error('userAgent is not present!');
         }
         gitClient = new GitClient(options);
     }
