@@ -105,7 +105,7 @@ class NodeGithubOAuth2 {
     }
 
     cloneProject(options, callback) {
-        let gitURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
+        let gitURL = 'https://' + options.token + ':x-oauth-basic@github.com/' + options.org + '/' + options.name + '.git';
         const ls = SPAWN('git', ['clone', gitURL, gitDirectory + options.name]);
         let cloneResult = '';
         ls.stdout.on('data', (data) => {
@@ -174,7 +174,6 @@ class NodeGithubOAuth2 {
                 token: options.token,
                 email: options.collabuser
             }, (error, result) => {
-                this.authenicateGithubWithToken(options.token);
                 let permission;
                 switch (options.permission) {
                     case 'admin':
@@ -187,6 +186,7 @@ class NodeGithubOAuth2 {
                         permission = 'pull';
                         break;
                 }
+                this.authenicateGithubWithToken(options.token);
                 github.repos.addCollaborator({
                     user: options.user,
                     repo: options.repo,
@@ -195,12 +195,24 @@ class NodeGithubOAuth2 {
                 }, callback);
             });
         } else {
+            let permission;
+            switch (options.permission) {
+                case 'admin':
+                    permission = 'admin';
+                    break;
+                case 'write':
+                    permission = 'push';
+                    break;
+                case 'read':
+                    permission = 'pull';
+                    break;
+            }
             this.authenicateGithubWithToken(options.token);
             github.repos.addCollaborator({
                 user: options.user,
                 repo: options.repo,
                 collabuser: options.collabuser,
-                permission: options.permission
+                permission: permission
             }, callback);
         }
     }
@@ -251,7 +263,7 @@ class NodeGithubOAuth2 {
         } else if (!options.org) {
             return callback('org is not present!');
         }
-        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git';
+        let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git'
         EXEC(['/bin/sh', __dirname.replace(/ /g, '\\ ') + '/../scripts/commitAndPush.sh', gitDirectory.replace(/ /g, '\\ ') + options.name, options.username, options.email, options.commitMessage.replace(/ /g, '\\ '), remoteURL].join(' '), function (error, stdout, stderr) {
             callback(error, stdout, stderr);
         });
