@@ -3,7 +3,9 @@
  */
 'use strict';
 // Dependencies
-let GitClient = require('./git-client');
+const QUERY_STRING = require('querystring');
+const GitClient = require('./git-client');
+
 let gitClient;
 
 class NodeGithubOAuth2 {
@@ -11,51 +13,158 @@ class NodeGithubOAuth2 {
         if (gitClient) {
             return 'Already Initialized!';
         }
+        if (!options.clientId) {
+            return callback('clientId is not present!');
+        } else if (!options.clientSecret) {
+            return callback('clientSecret is not present!');
+        } else if (!options.redirectURI) {
+            return callback('redirectURI is not present!');
+        } else if (!options.scope) {
+            return callback('scope is not present!');
+        } else if (!options.gitDirectory) {
+            return callback('gitDirectory is not present!');
+        } else if (!options.userAgent) {
+            return callback('userAgent is not present!');
+        }
         gitClient = new GitClient(options);
     }
 
-    getRedirectURL() {
-        gitClient.getRedirectURL();
+    getRedirectURL(state) {
+        if (!state) {
+            return 'state is not present!';
+        }
+        return gitClient.getRedirectURL(state);
     }
 
-    getToken() {
-        gitClient.getToken();
+    getToken(request, response, next) {
+        let code = request.query.code;
+        let state = request.query.state;
+        if (!code) {
+            return next('code is not present!');
+        } else if (!state) {
+            return next('state is not present!');
+        }
+        gitClient.getToken(code, (error, result) => {
+            if (error) {
+                next(error);
+            } else {
+                request.token = QUERY_STRING.parse(result).access_token;
+                request.state = state;
+                next();
+            }
+        });
     }
 
-    getUserDetails() {
-        gitClient.getUserDetails();
+    getUserDetails(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
+        gitClient.getUserDetails(options, callback);
     }
 
-    getEmailIds() {
-        gitClient.getEmailIds();
+    getEmailIds(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
+        gitClient.getEmailIds(options, callback);
     }
 
-    getOrganizations() {
-        gitClient.getOrganizations();
+    getOrganizations(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        }
+        gitClient.getOrganizations(options, callback);
     }
 
-    cloneProject() {
-        gitClient.cloneProject();
+    cloneProject(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        }
+        gitClient.cloneProject(options, callback);
     }
 
-    deleteGithubRepo() {
-        gitClient.deleteGithubRepo();
+    deleteGithubRepo(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        }
+        gitClient.deleteGithubRepo(options, callback);
     }
 
-    addCollaborator() {
-        gitClient.addCollaborator()
+    addCollaborator(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.collabuser) {
+            return callback('collabuser is not present!');
+        } else if (!options.user) {
+            return callback('user is not present!');
+        } else if (!options.repo) {
+            return callback('repo is not present!');
+        } else if (!options.permission) {
+            return callback('permission is not present!');
+        }
+        switch (options.permission) {
+            case 'admin':
+                options.permission = 'admin';
+                break;
+            case 'write':
+                options.permission = 'push';
+                break;
+            case 'read':
+                options.permission = 'pull';
+                break;
+        }
+        gitClient.addCollaborator(options, callback)
     }
 
-    removeCollaborator() {
-        gitClient.removeCollaborator()
+    removeCollaborator(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.collabuser) {
+            return callback('collabuser is not present!');
+        } else if (!options.user) {
+            return callback('user is not present!');
+        } else if (!options.repo) {
+            return callback('repo is not present!');
+        }
+        gitClient.removeCollaborator(options, callback)
     }
 
-    commitAndPush() {
-        gitClient.commitAndPush()
+    commitAndPush(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        } else if (!options.username) {
+            return callback('username is not present!');
+        } else if (!options.email) {
+            return callback('email is not present!');
+        } else if (!options.commitMessage) {
+            return callback('commitMessage is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        }
+        gitClient.commitAndPush(options, callback)
     }
 
-    createRelease() {
-        gitClient.createRelease()
+    createRelease(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.user) {
+            return callback('user is not present!');
+        } else if (!options.repo) {
+            return callback('repo is not present!');
+        } else if (!options.tag_name) {
+            return callback('tag_name is not present!');
+        }
+        gitClient.createRelease(options, callback)
     }
 }
 

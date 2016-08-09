@@ -3,7 +3,6 @@
  */
 const SIMPLE_OAUTH2 = require('simple-oauth2');
 const RANDOM_STRING = require("randomstring");
-const QUERY_STRING = require('querystring');
 const GITHUB = require("github");
 const SPAWN = require('child_process').spawn;
 const EXEC = require('child_process').exec;
@@ -61,6 +60,13 @@ class GitClient {
         });
     }
 
+    authenicateGithubWithToken(token) {
+        github.authenticate({
+            type: "oauth",
+            token: token
+        });
+    }
+
     getRedirectURL(state) {
         return oauth2.authCode.authorizeURL({
             redirect_uri: redirectURI,
@@ -69,43 +75,26 @@ class GitClient {
         });
     }
 
-    getToken(request, response, next) {
-        let code = request.query.code;
-        let state = request.query.state;
+    getToken(code, callback) {
         oauth2.authCode.getToken({
             code: code,
             redirect_uri: redirectURI
-        }, (error, result) => {
-            if (error) {
-                next(error);
-            } else {
-                request.token = QUERY_STRING.parse(result).access_token;
-                request.state = state;
-                next();
-            }
-        });
+        }, callback);
     }
 
-    authenicateGithubWithToken(token) {
-        github.authenticate({
-            type: "oauth",
-            token: token
-        });
+    getUserDetails(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.users.get({}, callback);
+    }
+
+    getEmailIds(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.users.getEmails({}, callback);
     }
 
     getOrganizations(options, callback) {
         this.authenicateGithubWithToken(options.token);
         github.users.getOrgs({}, callback);
-    }
-
-    createRepo(options, callback) {
-        this.authenicateGithubWithToken(options.token);
-        github.repos.createForOrg({
-            org: options.org,
-            name: options.name,
-            description: options.discription,
-            private: options.private || false
-        }, callback);
     }
 
     cloneProject(options, callback) {
@@ -123,114 +112,37 @@ class GitClient {
         });
     }
 
-    createRepoAndCloneProject(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.org) {
-            return callback('org is not present!');
-        } else if (!options.name) {
-            return callback('name is not present!');
-        }
-        this.createRepo(options, (createRepoError) => {
-            if (createRepoError) {
-                return callback(createRepoError);
-            }
-            this.cloneProject(options, callback);
-        });
-    }
-
     deleteGithubRepo(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.org) {
-            return callback('org is not present!');
-        } else if (!options.name) {
-            return callback('name is not present!');
-        }
         this.authenicateGithubWithToken(options.token);
         github.repos.delete({repo: options.name, user: options.org}, callback);
     }
 
-    searchByEmail(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.email) {
-            return callback('email is not present!');
-        }
-        this.authenicateGithubWithToken(options.token);
-        github.search.email({email: options.email}, callback);
-    }
-
     addCollaborator(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.collabuser) {
-            return callback('collabuser is not present!');
-        } else if (!options.user) {
-            return callback('user is not present!');
-        } else if (!options.repo) {
-            return callback('repo is not present!');
-        } else if (!options.permission) {
-            return callback('permission is not present!');
-        }
         if (isValidEmail(options.collabuser)) {
             this.searchByEmail({
                 token: options.token,
                 email: options.collabuser
             }, (error, result) => {
-                let permission;
-                switch (options.permission) {
-                    case 'admin':
-                        permission = 'admin';
-                        break;
-                    case 'write':
-                        permission = 'push';
-                        break;
-                    case 'read':
-                        permission = 'pull';
-                        break;
-                }
                 this.authenicateGithubWithToken(options.token);
                 github.repos.addCollaborator({
                     user: options.user,
                     repo: options.repo,
                     collabuser: result.user.login,
-                    permission: permission
+                    permission: options.permission
                 }, callback);
             });
         } else {
-            let permission;
-            switch (options.permission) {
-                case 'admin':
-                    permission = 'admin';
-                    break;
-                case 'write':
-                    permission = 'push';
-                    break;
-                case 'read':
-                    permission = 'pull';
-                    break;
-            }
             this.authenicateGithubWithToken(options.token);
             github.repos.addCollaborator({
                 user: options.user,
                 repo: options.repo,
                 collabuser: options.collabuser,
-                permission: permission
+                permission: options.permission
             }, callback);
         }
     }
 
     removeCollaborator(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.collabuser) {
-            return callback('collabuser is not present!');
-        } else if (!options.user) {
-            return callback('user is not present!');
-        } else if (!options.repo) {
-            return callback('repo is not present!');
-        }
         if (isValidEmail(options.collabuser)) {
             this.searchByEmail({
                 token: options.token,
@@ -254,19 +166,6 @@ class GitClient {
     }
 
     commitAndPush(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        } else if (!options.name) {
-            return callback('name is not present!');
-        } else if (!options.username) {
-            return callback('username is not present!');
-        } else if (!options.email) {
-            return callback('email is not present!');
-        } else if (!options.commitMessage) {
-            return callback('commitMessage is not present!');
-        } else if (!options.org) {
-            return callback('org is not present!');
-        }
         let remoteURL = 'https://' + options.token + '@github.com/' + options.org + '/' + options.name + '.git';
         EXEC([
             '/bin/sh',
@@ -281,32 +180,49 @@ class GitClient {
         });
     }
 
-    getUserDetails(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        }
-        this.authenicateGithubWithToken(options.token);
-        github.users.get({}, callback);
-    }
-
-    getEmailIds(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        }
-        this.authenicateGithubWithToken(options.token);
-        github.users.getEmails({}, callback);
-    }
-
     createRelease(options, callback) {
-        if (!options.token) {
-            return callback('token is not present!');
-        }
         this.authenicateGithubWithToken(options.token);
         github.repos.createRelease({
             user: options.user,
             repo: options.repo,
             tag_name: options.tag_name
         }, callback);
+    }
+
+    createRepo(options, callback) {
+        this.authenicateGithubWithToken(options.token);
+        github.repos.createForOrg({
+            org: options.org,
+            name: options.name,
+            description: options.discription,
+            private: options.private || false
+        }, callback);
+    }
+
+    createRepoAndCloneProject(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        }
+        this.createRepo(options, (createRepoError) => {
+            if (createRepoError) {
+                return callback(createRepoError);
+            }
+            this.cloneProject(options, callback);
+        });
+    }
+
+    searchByEmail(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.email) {
+            return callback('email is not present!');
+        }
+        this.authenicateGithubWithToken(options.token);
+        github.search.email({email: options.email}, callback);
     }
 }
 
