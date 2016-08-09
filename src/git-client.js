@@ -29,7 +29,7 @@ let replaceSpaceInPath = (path) => {
     return path.replace(SPACE_REGEX, SPACE_REPLACER);
 };
 
-class NodeGithubOAuth2 {
+class GitClient {
     constructor(options) {
         clientId = options.clientId;
         clientSecret = options.clientSecret;
@@ -309,3 +309,5 @@ class NodeGithubOAuth2 {
         }, callback);
     }
 }
+
+module.exports = GitClient;

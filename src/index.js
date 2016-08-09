@@ -3,26 +3,60 @@
  */
 'use strict';
 // Dependencies
-let nodeGithubOAuth2;
+let GitClient = require('./git-client');
+let gitClient;
 
-let initialize = (options) => {
-    if (nodeGithubOAuth2) {
-        return 'Already Initialized!';
+class NodeGithubOAuth2 {
+    initialize(options) {
+        if (gitClient) {
+            return 'Already Initialized!';
+        }
+        gitClient = new GitClient(options);
     }
-    nodeGithubOAuth2 = new NodeGithubOAuth2(options);
-};
 
-module.exports = {
-    init: initialize,
-    getRedirectURL: nodeGithubOAuth2.getRedirectURL,
-    getToken: nodeGithubOAuth2.getToken,
-    getUserDetails: nodeGithubOAuth2.getUserDetails,
-    getEmailIds: nodeGithubOAuth2.getEmailIds,
-    getOrganizations: nodeGithubOAuth2.getOrganizations,
-    cloneProject: nodeGithubOAuth2.cloneProject,
-    deleteGithubRepo: nodeGithubOAuth2.deleteGithubRepo,
-    addCollaborator: nodeGithubOAuth2.addCollaborator,
-    removeCollaborator: nodeGithubOAuth2.removeCollaborator,
-    commitAndPush: nodeGithubOAuth2.commitAndPush,
-    createRelease: nodeGithubOAuth2.createRelease
-};
+    getRedirectURL() {
+        gitClient.getRedirectURL();
+    }
+
+    getToken() {
+        gitClient.getToken();
+    }
+
+    getUserDetails() {
+        gitClient.getUserDetails();
+    }
+
+    getEmailIds() {
+        gitClient.getEmailIds();
+    }
+
+    getOrganizations() {
+        gitClient.getOrganizations();
+    }
+
+    cloneProject() {
+        gitClient.cloneProject();
+    }
+
+    deleteGithubRepo() {
+        gitClient.deleteGithubRepo();
+    }
+
+    addCollaborator() {
+        gitClient.addCollaborator()
+    }
+
+    removeCollaborator() {
+        gitClient.removeCollaborator()
+    }
+
+    commitAndPush() {
+        gitClient.commitAndPush()
+    }
+
+    createRelease() {
+        gitClient.createRelease()
+    }
+}
+
+module.exports = new NodeGithubOAuth2();
