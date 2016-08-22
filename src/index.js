@@ -166,6 +166,19 @@ class NodeGithubOAuth2 {
         }
         gitClient.createRelease(options, callback)
     }
+
+    updateProject(options, callback) {
+        if (!options.token) {
+            return callback('token is not present!');
+        } else if (!options.name) {
+            return callback('name is not present!');
+        } else if (!options.username) {
+            return callback('username is not present!');
+        } else if (!options.org) {
+            return callback('org is not present!');
+        }
+        gitClient.updateProject(options, callback)
+    }
 }
 
 module.exports = new NodeGithubOAuth2();

@@ -119,8 +119,6 @@ class GitClient {
                 callback(error, stdout, stderr);
             }
         });
-
-
     }
 
     deleteGithubRepo(options, callback) {
@@ -199,6 +197,20 @@ class GitClient {
             repo: options.repo,
             tag_name: options.tag_name
         }, callback);
+    }
+
+    updateProject(options, callback) {
+        let remoteURL = 'https://' + options.token + ':x-oauth-basic@github.com/' + options.org + '/' + options.name + '.git';
+        EXEC([
+            '/bin/sh',
+            replaceSpaceInPath(__dirname + '/../scripts/pull.sh'),
+            replaceSpaceInPath(gitDirectory + options.name),
+            options.username,
+            remoteURL
+        ].join(' '), function (error, stdout, stderr) {
+            console.log('Pull Result:', stderr, stdout);
+            callback(error, stdout, stderr);
+        });
     }
 
     createRepo(options, callback) {
