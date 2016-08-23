@@ -5,5 +5,5 @@ git config user.name $2
 git config user.email $3
 git add --all
 git commit -m "$4"
-git pull origin master
-git push origin master
+git pull $2 master
+git push $2 master
