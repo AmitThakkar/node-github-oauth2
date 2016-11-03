@@ -4,7 +4,8 @@
 var express = require('express'),
     app = express();
 
-var NodeGithubOAuth2 = require('node-github-oauth2')({
+const NodeGithubOAuth2 = require('node-github-oauth2');
+NodeGithubOAuth2.initialize({
     clientId: 'ZZZZZZZZZZZZZZZZZZZZ',
     clientSecret: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
     redirectURI: 'http://localhost:3000/callback',
@@ -14,9 +15,8 @@ var NodeGithubOAuth2 = require('node-github-oauth2')({
 });
 
 // Initial page redirecting to Github
-// app.get('/auth', NodeGithubOAuth2.authorized);
 exports.authorized = (request, response) => {
-    response.status(200).json({redirectURL: NodeGithubOAuth2.getRedirectURL()});
+    response.status(200).json({redirectURL: NodeGithubOAuth2.getRedirectURL(request.user._id.toString())});
 };
 
 // Callback service parsing the authorization token and asking for the access token
@@ -27,6 +27,37 @@ app.get('/callback', NodeGithubOAuth2.getToken, function (request, response) {
     console.log('Access Token Error', error.message);
     res.json(error);
 });
+
+
+exports.authorizedCallback = [NodeGithubOAuth2.getToken, (request, response) => {
+    let token = request.token;
+    let _id = request.state;
+    NodeGithubOAuth2.getUserDetails({
+        token: token
+    }, (error, user) => {
+        if (!user.email) {
+            NodeGithubOAuth2.getEmailIds({
+                token: token
+            }, (error, emailIds) => {
+                let emailId = emailIds.filter((email) => {
+                    return email.primary;
+                })[0];
+                // User Details
+                console.log({
+                    token: token,
+                    username: user.login,
+                    email: emailId.email
+                });
+            });
+        } else {
+            console.log({
+                token: token,
+                username: user.login,
+                email: emailId.email
+            });
+        }
+    });
+}];
 
 app.get('/', function (req, res) {
     res.send('Hello<br><a href="/auth">Log in with Github</a>');
@@ -42,6 +73,18 @@ app.get('/orgs', function (req, res) {
 
 app.get('/createProject', function (req, res) {
     NodeGithubOAuth2.createRepoAndCloneProject({
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        org: 'OrganizationName',
+        name: 'ngt1',
+        description: 'Node-Git-Test-2',
+        private: true
+    }, function (error, result) {
+        res.json(result);
+    });
+});
+
+app.get('/cloneProject', function (req, res) {
+    NodeGithubOAuth2.cloneProject({
         token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
         org: 'OrganizationName',
         name: 'ngt1',
@@ -70,7 +113,7 @@ app.get('/addCollaborators', function (req, res) {
         collabuser: 'NamitaMalik',
         permission: 'admin'
     }, function (error, result) {
-        if(error) {
+        if (error) {
             res.json(result);
         } else {
             res.json(result);
@@ -85,13 +128,44 @@ app.get('/removeCollaborator', function (req, res) {
         repo: 'ngt1',
         collabuser: 'NamitaMalik'
     }, function (error, result) {
-        if(error) {
+        if (error) {
             res.json(result);
         } else {
             res.json(result);
         }
     });
 });
+
+app.get('/commitAndPush', function (req, res) => {
+    NodeGithubOAuth2.commitAndPush({
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        email: 'vigildbest@gmail.com',
+        name: 'projectName',
+        username: 'AmitThakkar',
+        org: 'NA',
+        commitMessage: 'Commit by Wize Server'
+    }, (error, result) => {
+        NodeGithubOAuth2.createRelease({
+            token: options.github.token,
+            user: options.org,
+            repo: options.name,
+            tag_name: options.tag
+        }, function (error, result) {
+            res.json(result);
+        });
+    });
+});
+
+exports.updateProject = (req, res) => {
+    NodeGithubOAuth2.updateProject({
+        token: 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY',
+        name: 'projectName',
+        username: 'AmitThakkar',
+        org: 'NA'
+    }, function (error, result) {
+        res.json(result);
+    });
+};
 
 app.listen(3000);
 
